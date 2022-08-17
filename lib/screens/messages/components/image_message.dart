@@ -20,7 +20,7 @@ class ImageMessage extends StatelessWidget {
         children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(25),
-                  child: Image.network(message!.imageUrl!,fit: BoxFit.fitWidth),
+                  child: Image.file(File(message!.imageUrl!),fit: BoxFit.fitWidth),
                 ),
 
 

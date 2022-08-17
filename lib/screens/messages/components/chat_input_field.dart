@@ -99,30 +99,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                   messageStatus: MessageStatus.viewed,
                                   isSender: true,
                                   imageUrl: file.path);
-                              final storage = FirebaseStorage.instance;
-                              final firestore = FirebaseFirestore.instance;
-                              final user = Provider.of<GoogleUser>(context,listen: false).user;
-                              final ref = storage.ref().child('images').child(
-                                  DateTime.now().toIso8601String() + file.name);
-                              FormData formData = new FormData.fromMap({
-                              "image":            await MultipartFile.fromFile(file.path),
-                                "text":"Welcome Body"
-                              });
-                            //  final respone = await Dio().post('http://10.0.2.2:3000/post-image',
-                             //     data: formData,
-                              //    options:Options(headers: {'Content-Type':'multipart/form-data',"Accept":'*/*'}),);
-                              //print(respone.data);
-                              await ref.putFile(File(file!.path));
-                              final url = await ref.getDownloadURL();
-                              print(url);
-                              await firestore.collection('messages').add({
-                                'image': url,
-                                'senderId': user.uid,
-                                'senderName': user.displayName,
-                                'senderImage': user.photoURL,
-                                'type': 1,
-                                'timestamp': DateTime.now(),
-                              }).then((value) => print(value.id));
                               Provider.of<ChatMessages>(context, listen: false)
                                   .addMessage(message);
                             },
@@ -153,30 +129,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
                               final message = ChatMessage(
                                   messageType: ChatMessageType.image,
                                   messageStatus: MessageStatus.viewed,
-                                  isSender: true,
+                                  isSender: false,
+                                  sender: 'Jenny Wilson',
+                                  senderImage: 'assets/images/user.png',
                                   imageUrl: file.path);
-
-                              final storage = FirebaseStorage.instance;
-                              final firestore = FirebaseFirestore.instance;
-                              final user = Provider.of<GoogleUser>(context,listen: false).user;
-                              final ref = storage.ref().child('images').child(
-                                  DateTime.now().toIso8601String() + file.name);
-                              FormData formData = new FormData.fromMap({
-                                "image": new File(file.path),
-                                'text':'Welcome Darling'
-                              });
-                              final link = Uri.http('10.0.2.2:3000','/post-image');
-                             // await ref.putFile(File(file!.path));
-                              //final url = await ref.getDownloadURL();
-                              //print(url);
-                             /*await firestore.collection('messages').add({
-                                'image': url,
-                                'senderId': user.uid,
-                                'senderName': user.displayName,
-                                'senderImage': user.photoURL,
-                                'type': 1,
-                                'timestamp': DateTime.now(),
-                              }).then((value) => print(value.id));*/
                               Provider.of<ChatMessages>(context, listen: false)
                                   .addMessage(message);
                             },
@@ -201,32 +157,9 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                   messageStatus: MessageStatus.not_view,
                                   isSender: true,
                                   text: messageController.text);
+                              messageController.clear();
                               Provider.of<ChatMessages>(context, listen: false)
                                   .addMessage(message);
-                              final user = Provider.of<GoogleUser>(context,
-                                      listen: false)
-                                  .user;
-                              final firestore = FirebaseFirestore.instance;
-                              final googleUser = Provider.of<GoogleUser>(context,listen: false).googleUser;
-                              final link = Uri.http('10.0.2.2:3000','/save-message');
-                              final messageText = messageController.text;
-                              messageController.clear();
-                              final respone = await http.post(link,headers: {
-                                "content-type":"application/json",
-                                'id':googleUser.id
-                              },body: jsonEncode({
-                                'message':messageText,
-                                'type':'text',
-                              }));
-                              print(jsonDecode(respone.body));
-                              firestore.collection('messages').add({
-                                'message': messageText,
-                                'senderId': user.uid,
-                                'senderName': user.displayName,
-                                'senderImage': user.photoURL,
-                                'type': 0,
-                                'timestamp': DateTime.now(),
-                              }).then((value) => print(value.id));
                             },
                             icon: Icon(
                               Icons.send,

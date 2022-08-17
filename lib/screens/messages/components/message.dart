@@ -39,7 +39,7 @@ class Message extends StatelessWidget {
           if (!message.isSender) ...[
             CircleAvatar(
               radius: 12,
-              backgroundImage:NetworkImage(message.senderImage!),
+              backgroundImage:AssetImage(message.senderImage!),
             ),
             SizedBox(width: kDefaultPadding / 2),
           ],

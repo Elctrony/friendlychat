@@ -31,8 +31,7 @@ class SigninOrSignupScreen extends StatelessWidget {
                 Spacer(),
                 ElevatedButton.icon(
                   label: Text('Sign In with Google'),
-                  onPressed: () async {
-                    await Provider.of<GoogleUser>(context,listen: false).googleLogin();
+                  onPressed: ()  {
                     Navigator.of(context).push(MaterialPageRoute(builder: (ctx)=>MessagesScreen()));
                   },
                   style: ElevatedButton.styleFrom(primary: Colors.red),
