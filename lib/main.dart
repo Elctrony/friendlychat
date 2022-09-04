@@ -1,5 +1,6 @@
 import 'package:chat/models/ChatMessage.dart';
 import 'package:chat/models/User.dart';
+import 'package:chat/screens/signinOrSignUp/signin_or_signup_screen.dart';
 import 'package:chat/screens/welcome/welcome_screen.dart';
 import 'package:chat/theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: lightThemeData(context),
         darkTheme: darkThemeData(context),
-        home: WelcomeScreen(),
+        home: SigninOrSignupScreen(),
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:chat/models/ChatMessage.dart';
 import 'package:chat/models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
 
@@ -91,27 +92,20 @@ class _ChatInputFieldState extends State<ChatInputField> {
                               XFile? file = await ImagePicker()
                                   .pickImage(source: ImageSource.gallery);
                               print(file!.path);
-                              final image = Image.file(File(file.path));
-                              print('image:${image}');
-                              print('height:${image.height}');
                               final message = ChatMessage(
                                   messageType: ChatMessageType.image,
                                   messageStatus: MessageStatus.viewed,
                                   isSender: true,
                                   imageUrl: file.path);
+                              Provider.of<ChatMessages>(context, listen: false)
+                                  .addMessage(message);
                               final storage = FirebaseStorage.instance;
                               final firestore = FirebaseFirestore.instance;
-                              final user = Provider.of<GoogleUser>(context,listen: false).user;
+                              final user = FirebaseAuth.instance.currentUser!;
+
                               final ref = storage.ref().child('images').child(
-                                  DateTime.now().toIso8601String() + file.name);
-                              FormData formData = new FormData.fromMap({
-                              "image":            await MultipartFile.fromFile(file.path),
-                                "text":"Welcome Body"
-                              });
-                            //  final respone = await Dio().post('http://10.0.2.2:3000/post-image',
-                             //     data: formData,
-                              //    options:Options(headers: {'Content-Type':'multipart/form-data',"Accept":'*/*'}),);
-                              //print(respone.data);
+                                 DateTime.now().toIso8601String() + file.name);
+
                               await ref.putFile(File(file!.path));
                               final url = await ref.getDownloadURL();
                               print(url);
@@ -123,8 +117,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                 'type': 1,
                                 'timestamp': DateTime.now(),
                               }).then((value) => print(value.id));
-                              Provider.of<ChatMessages>(context, listen: false)
-                                  .addMessage(message);
+
                             },
                             icon: Icon(
                               Icons.attach_file,
@@ -143,7 +136,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
                         ? IconButton(
                             onPressed: () async {
                               print('Camera');
-                              uploadImage();
                               XFile? file = await ImagePicker()
                                   .pickImage(source: ImageSource.camera);
                               print(file!.path);
@@ -158,25 +150,21 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
                               final storage = FirebaseStorage.instance;
                               final firestore = FirebaseFirestore.instance;
-                              final user = Provider.of<GoogleUser>(context,listen: false).user;
+                              final user = FirebaseAuth.instance.currentUser!;
                               final ref = storage.ref().child('images').child(
                                   DateTime.now().toIso8601String() + file.name);
-                              FormData formData = new FormData.fromMap({
-                                "image": new File(file.path),
-                                'text':'Welcome Darling'
-                              });
-                              final link = Uri.http('10.0.2.2:3000','/post-image');
-                             // await ref.putFile(File(file!.path));
-                              //final url = await ref.getDownloadURL();
-                              //print(url);
-                             /*await firestore.collection('messages').add({
+
+                              await ref.putFile(File(file!.path));
+                              final url = await ref.getDownloadURL();
+                              print(url);
+                             await firestore.collection('messages').add({
                                 'image': url,
                                 'senderId': user.uid,
                                 'senderName': user.displayName,
                                 'senderImage': user.photoURL,
                                 'type': 1,
                                 'timestamp': DateTime.now(),
-                              }).then((value) => print(value.id));*/
+                              }).then((value) => print(value.id));
                               Provider.of<ChatMessages>(context, listen: false)
                                   .addMessage(message);
                             },
@@ -207,26 +195,18 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                       listen: false)
                                   .user;
                               final firestore = FirebaseFirestore.instance;
-                              final googleUser = Provider.of<GoogleUser>(context,listen: false).googleUser;
-                              final link = Uri.http('10.0.2.2:3000','/save-message');
                               final messageText = messageController.text;
                               messageController.clear();
-                              final respone = await http.post(link,headers: {
-                                "content-type":"application/json",
-                                'id':googleUser.id
-                              },body: jsonEncode({
-                                'message':messageText,
-                                'type':'text',
-                              }));
-                              print(jsonDecode(respone.body));
-                              firestore.collection('messages').add({
+                              Map<String,dynamic> document={
                                 'message': messageText,
                                 'senderId': user.uid,
                                 'senderName': user.displayName,
                                 'senderImage': user.photoURL,
                                 'type': 0,
                                 'timestamp': DateTime.now(),
-                              }).then((value) => print(value.id));
+                              };
+                              firestore.collection('messages').add(document).then((value) => print(value.id));
+
                             },
                             icon: Icon(
                               Icons.send,
@@ -246,29 +226,5 @@ class _ChatInputFieldState extends State<ChatInputField> {
         ),
       ),
     );
-  }
-  uploadImage() async{
-
-    var request = http.MultipartRequest("POST",Uri.parse("https://10.0.2.2:3000/post-image"));
-
-    request.fields['title'] = "dummyImage";
-    request.headers['Authorization'] = "Client-ID " +"f7........";
-
-    var picture = http.MultipartFile.fromBytes('image',
-        (await rootBundle.load('assets/images/user.png')).buffer.asUint8List(),
-        filename: 'testimage.png');
-
-    request.files.add(picture);
-
-    var response = await request.send();
-
-    var responseData = await response.stream.toBytes();
-
-    var result = String.fromCharCodes(responseData);
-
-    print(result);
-
-
-
   }
 }

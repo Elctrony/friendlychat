@@ -1,5 +1,7 @@
 import 'package:chat/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'components/body.dart';
 
@@ -7,12 +9,12 @@ class MessagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: buildAppBar(context),
       body: Body(),
     );
   }
 
-  AppBar buildAppBar() {
+  AppBar buildAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
       title: Row(
@@ -38,6 +40,14 @@ class MessagesScreen extends StatelessWidget {
         IconButton(
           icon: Icon(Icons.videocam),
           onPressed: () {},
+        ),
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () async {
+           await GoogleSignIn().signOut();
+           await  FirebaseAuth.instance.signOut();
+            Navigator.of(context).pop();
+          },
         ),
         SizedBox(width: kDefaultPadding / 2),
       ],

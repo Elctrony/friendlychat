@@ -7,11 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
 class GoogleUser with ChangeNotifier {
-  final googleAuthentiction = GoogleSignIn(
-    scopes: [
-      'https://www.googleapis.com/auth/drive',
-    ],
-  );
+  final googleAuthentiction = GoogleSignIn();
 
   GoogleSignInAccount? _googleUser;
 
@@ -35,14 +31,7 @@ class GoogleUser with ChangeNotifier {
 
     final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
-    final link = Uri.http('10.0.2.2:3000','/sign-in');
-    final respone = await http.post(link,headers: {
-      "content-type":"application/json"
-    },body: jsonEncode({
-      'id':googleAuth.idToken,
-    }));
-    final data = jsonDecode(respone.body) as Map<String, dynamic>;
-    print(data);
+
     final userCredential =
         await FirebaseAuth.instance.signInWithCredential(credential);
     _user = userCredential.user!;
